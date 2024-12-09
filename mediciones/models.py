@@ -5,42 +5,6 @@ from fiscalizacion.models import Fiscalizacion
 from services.utils.GenerarNombre import GenerarNombre
 
 
-class Sensor(models.Model):
-
-    latitud = models.FloatField(verbose_name='Latitud')
-    longitud = models.FloatField(verbose_name='Longitud')
-    creado = models.DateTimeField(default=timezone.now, editable=False)
-
-
-
-    class Meta:
-        db_table = 'sensor'
-        verbose_name = 'Sensor'
-        verbose_name_plural = 'Sensores'
-
-
-
-class  MedicionSensor(models.Model):
-
-    temperatura = models.FloatField(blank=True, null=True, verbose_name='Temperatura (°C)')
-    humedad = models.FloatField(blank=True, null=True, verbose_name='Humedad (%)')
-    luminancia = models.FloatField(verbose_name='Valor luminancia')
-    iluminancia = models.FloatField(verbose_name='Valor iluminancia')
-    creado = models.DateTimeField(default=timezone.now, editable=False)
-    sensor = models.ForeignKey(Sensor, null=False, on_delete=models.RESTRICT)
-
-
-    def __str__(self):
-        return "{} {}".format(self.iluminancia, self.luminancia)
-
-    class Meta:
-        db_table = 'medicionSensor'
-        verbose_name = 'Medicion Sensor'
-        verbose_name_plural = 'Mediciones Sensores'
-
-
-
-
 class InstrumentoMedicion(models.Model):
     tipo = models.CharField(max_length=1, choices=tipo_instrumento, verbose_name='Iipo')
     marca = models.CharField(max_length=50, verbose_name='Marca')
@@ -78,3 +42,35 @@ class Medicion(models.Model):
         db_table = 'medicion'
         verbose_name = 'Medición'
         verbose_name_plural = 'Mediciones'
+
+
+
+class Sensor(models.Model):
+    latitud = models.FloatField(verbose_name='Latitud')               # Latitud del sensor
+    longitud = models.FloatField(verbose_name='Longitud')              # Longitud del sensor
+    creado = models.DateTimeField(default=timezone.now, editable=False)  # Fecha y hora de creación
+
+    def __str__(self):
+        return f"Sensor {self.id} registrado en ({self.latitud}, {self.longitud})"
+    
+
+
+
+class MedicionSensor(models.Model):
+    temperatura = models.FloatField(blank=True, null=True, verbose_name='Temperatura (°C)')
+    humedad = models.FloatField(blank=True, null=True, verbose_name='Humedad (%)')
+    luminancia = models.FloatField(verbose_name='Valor Luminancia')  # Luminancia, requerido
+    iluminancia = models.FloatField(verbose_name='Valor Iluminancia')  # Iluminancia, requerido
+    creado = models.DateTimeField(default=timezone.now, editable=False)  
+    sensor = models.ForeignKey(
+        'Sensor', on_delete=models.CASCADE, related_name='mediciones'
+    )  # Relación con el modelo Sensor
+
+    class Meta:
+        db_table = 'medicionsensor'  # Nombre de la tabla en la base de datos
+        verbose_name = 'Medición de Sensor'
+        verbose_name_plural = 'Mediciones de Sensores'
+
+    def __str__(self):
+        return f"Medición {self.id} del sensor {self.sensor.id} registrada el {self.creado}"
+
